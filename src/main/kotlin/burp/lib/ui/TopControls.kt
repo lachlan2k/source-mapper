@@ -2,6 +2,7 @@ package burp.lib.ui
 
 import javax.swing.JButton
 import javax.swing.JLabel
+import javax.swing.JOptionPane
 import javax.swing.JPanel
 
 class TopControls : JPanel() {
@@ -20,5 +21,11 @@ class TopControls : JPanel() {
         exportText = null
         add(exportTextLabel)
         add(exportButton)
+
+        exportButton.addActionListener {
+            JOptionPane.showOptionDialog(
+                this, "Export doesn't work yet, sorry. :(", "I'm really sorry", JOptionPane.OK_OPTION,
+                JOptionPane.PLAIN_MESSAGE, null, arrayOf("It's okay, Lachlan"), "It's okay, Lachlan")
+        }
     }
 }
