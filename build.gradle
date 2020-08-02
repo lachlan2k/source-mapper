@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'org.example'
-version '0.1'
+version '0.0.1'
 
 repositories {
     mavenCentral()
@@ -12,11 +12,12 @@ repositories {
 
 dependencies {
     implementation 'com.google.code.gson:gson:2.8.6'
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-    api "net.portswigger.burp.extender:burp-extender-api:1.7.22"
+    implementation 'org.jetbrains.kotlin:kotlin-stdlib'
+    api 'net.portswigger.burp.extender:burp-extender-api:1.7.22'
 }
 
 task fatJar(type: Jar) {
+    destinationDirectory = file('release')
     from { configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) } }
     with jar
 }
