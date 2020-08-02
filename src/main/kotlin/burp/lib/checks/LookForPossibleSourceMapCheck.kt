@@ -9,6 +9,7 @@ import burp.lib.issues.PossibleSourceMapIssue
 
 class LookForPossibleSourceMapCheck(private val controller: SourceMapperController) : IScannerCheck {
     private val sourceMapCommentPattern = """//#\s?sourceMappingURL=(.+?)(?=\\n|\n|$|//)""".toRegex()
+    private val foundComments = HashMap<String, MutableSet<String>>()
 
     override fun consolidateDuplicateIssues(existingIssue: IScanIssue?, newIssue: IScanIssue?) = when (existingIssue?.issueDetail) {
         null -> 0
@@ -36,9 +37,17 @@ class LookForPossibleSourceMapCheck(private val controller: SourceMapperControll
             ))
 
             PossibleSourceMapIssue(requestInfo.url, arrayOf(marked), baseRequestResponse.httpService, comment, sourceMapFileName)
+        }.filter {
+            when (val set = foundComments[it.url.toString()]) {
+                null -> true
+                else -> !set.contains(it.extractedComment)
+            }
         }.toMutableList()
 
         issues.forEach { controller.onFoundSourceMapComment(it, requestInfo) }
+        issues.forEach {
+            foundComments.getOrPut(it.url.toString()) { mutableSetOf() }.add(it.extractedComment)
+        }
 
         return issues as MutableList<IScanIssue>
     }
