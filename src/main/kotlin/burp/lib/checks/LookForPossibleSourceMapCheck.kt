@@ -10,10 +10,17 @@ import burp.lib.issues.PossibleSourceMapIssue
 class LookForPossibleSourceMapCheck(private val controller: SourceMapperController) : IScannerCheck {
     private val sourceMapCommentPattern = """//#\s?sourceMappingURL=(.+?)(?=\\n|\n|$|//)""".toRegex()
 
-    override fun consolidateDuplicateIssues(existingIssue: IScanIssue?, newIssue: IScanIssue?) = if (existingIssue?.issueDetail == newIssue?.issueDetail) -1 else 0
+    override fun consolidateDuplicateIssues(existingIssue: IScanIssue?, newIssue: IScanIssue?) =
+        when (existingIssue?.issueDetail) {
+            null -> 0
+            newIssue?.issueDetail -> -1
+            else -> 0
+        }
 
     override fun doPassiveScan(baseRequestResponse: IHttpRequestResponse?): MutableList<IScanIssue> {
         if (baseRequestResponse == null) return ArrayList()
+
+        println("Doing passive scan")
 
         val requestInfo = controller.helpers.analyzeRequest(baseRequestResponse)
         val responseInfo = controller.helpers.analyzeResponse(baseRequestResponse.response)

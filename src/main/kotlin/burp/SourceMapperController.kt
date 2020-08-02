@@ -54,6 +54,7 @@ class SourceMapperController(val callbacks: IBurpExtenderCallbacks) {
 
         val request = helpers.buildHttpRequest(java.net.URL(mapUrl))
         val requestResponse = SourceMapSiteMapItem(request, issue.httpService)
+        println("Adding to sitemap $mapUrl")
 
         callbacks.addToSiteMap(requestResponse)
     }

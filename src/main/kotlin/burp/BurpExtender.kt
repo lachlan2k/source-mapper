@@ -9,7 +9,7 @@ class BurpExtender : IBurpExtender {
         System.setOut(PrintStream(callbacks.stdout))
         System.setErr(PrintStream(callbacks.stderr))
 
-        callbacks.setExtensionName("SourceMapperKt")
+        callbacks.setExtensionName("SourceMapper")
         controller = SourceMapperController(callbacks)
     }
 }
