@@ -3,7 +3,7 @@ package burp.lib
 import com.google.gson.Gson
 import com.google.gson.JsonParseException
 
-class SourceMapExtractor(private val body: String) {
+class SourceMapExtractor(body: String) {
     private class SourceMap(val sources: Array<String>, val sourcesContent: Array<String>)
     private var loadedSourceMap: SourceMap
 

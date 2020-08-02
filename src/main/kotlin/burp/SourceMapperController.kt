@@ -1,12 +1,10 @@
 package burp
 
-import SourceMapperUITab
-import burp.lib.SourceMapExtractor
+import burp.lib.ui.SourceMapperUITab
 import burp.lib.SourceMapSourceStore
 import burp.lib.checks.AnalyseMapFileCheck
 import burp.lib.checks.LookForPossibleSourceMapCheck
 import burp.lib.issues.PossibleSourceMapIssue
-import javax.xml.transform.Source
 
 class SourceMapperController(val callbacks: IBurpExtenderCallbacks) {
     val helpers: IExtensionHelpers = callbacks.helpers
@@ -17,8 +15,8 @@ class SourceMapperController(val callbacks: IBurpExtenderCallbacks) {
     init {
         callbacks.registerScannerCheck(LookForPossibleSourceMapCheck(this))
         callbacks.registerScannerCheck(AnalyseMapFileCheck(this))
-        callbacks.customizeUiComponent(uiTab.uiComponent)
         callbacks.addSuiteTab(uiTab)
+        callbacks.customizeUiComponent(uiTab.uiComponent)
 
         println("Started SourceMapper!")
     }

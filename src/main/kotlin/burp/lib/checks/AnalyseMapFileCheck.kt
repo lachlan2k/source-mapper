@@ -9,12 +9,11 @@ import burp.lib.SourceMapExtractor
 import burp.lib.issues.SourceMapFoundIssue
 
 class AnalyseMapFileCheck(private val controller: SourceMapperController) : IScannerCheck {
-    override fun consolidateDuplicateIssues(existingIssue: IScanIssue?, newIssue: IScanIssue?) =
-        when (existingIssue?.issueDetail) {
-            null -> 0
-            newIssue?.issueDetail -> -1
-            else -> 0
-        }
+    override fun consolidateDuplicateIssues(existingIssue: IScanIssue?, newIssue: IScanIssue?) = when (existingIssue?.issueDetail) {
+        null -> 0
+        newIssue?.issueDetail -> -1
+        else -> 0
+    }
 
     override fun doPassiveScan(baseRequestResponse: IHttpRequestResponse?): MutableList<IScanIssue> {
         if (baseRequestResponse == null) return ArrayList()

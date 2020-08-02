@@ -39,8 +39,8 @@ class SourceMapSourceStore : TreeModel {
 
     private fun notifyListeners() {
         listeners.forEach {
-            it.treeStructureChanged(TreeModelEvent(this, arrayOf<Any>(root)))
-            it.treeNodesChanged(TreeModelEvent(this, arrayOf<Any>(root)))
+            it.treeStructureChanged(TreeModelEvent(this, arrayOf(root)))
+            it.treeNodesChanged(TreeModelEvent(this, arrayOf(root)))
         }
     }
 

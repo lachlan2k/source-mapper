@@ -8,19 +8,9 @@ import javax.swing.JScrollPane
 import javax.swing.JSplitPane
 import javax.swing.JTree
 import javax.swing.ScrollPaneConstants
-import javax.swing.event.TreeModelListener
-import javax.swing.tree.DefaultMutableTreeNode
-import javax.swing.tree.TreeModel
-import javax.swing.tree.TreePath
 
-class FileBrowser(private val controller: SourceMapperController) : JSplitPane(JSplitPane.HORIZONTAL_SPLIT) {
-    open class NodeFolderPathData(val pathLevels: List<String>) {
-        override fun toString () = if (pathLevels.isEmpty()) "SourceMapper" else pathLevels.last()
-    }
-
-    class NodeFileContentAndPathData(pathLevels: List<String>, val content: String) : NodeFolderPathData(pathLevels) {}
-
-    class EditorController() : IMessageEditorController {
+class FileBrowser(private val controller: SourceMapperController) : JSplitPane(HORIZONTAL_SPLIT) {
+    class EditorController : IMessageEditorController {
         private var _request: ByteArray? = null
         private var _response: ByteArray? = null
         private var _httpService: IHttpService? = null
@@ -28,10 +18,6 @@ class FileBrowser(private val controller: SourceMapperController) : JSplitPane(J
         override fun getResponse() = _response
         override fun getRequest() = _request
         override fun getHttpService() = _httpService
-
-        fun setResponse(newResponse: ByteArray?) {
-            _response = newResponse
-        }
     }
 
     private val editorController = EditorController()

@@ -7,5 +7,5 @@ class PossibleSourceMapIssue(_url: java.net.URL, _httpMessages: Array<IHttpReque
     override fun getIssueName() = "Possible source map"
     override fun getSeverity() = "Information"
     override fun getConfidence() = "Tentative"
-    override fun getIssueDetail() = "The following source map comment was found: ${extractedComment}"
+    override fun getIssueDetail() = "The following source map comment was found: $extractedComment"
 }
