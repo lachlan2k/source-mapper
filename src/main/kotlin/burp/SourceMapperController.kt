@@ -47,13 +47,16 @@ class SourceMapperController(val callbacks: IBurpExtenderCallbacks) {
         val baseUrl = requestInfo.url.toString().substringBeforeLast("/")
         val mapUrl = "$baseUrl/${issue.sourceMapFileName}"
 
-        if (addedToSiteMap.contains(mapUrl)) return
-        addedToSiteMap.add(mapUrl)
+        synchronized(this) {
+            if (addedToSiteMap.contains(mapUrl)) return
+            addedToSiteMap.add(mapUrl)
 
-        val request = helpers.buildHttpRequest(java.net.URL(mapUrl))
-        val requestResponse = SourceMapSiteMapItem(request, issue.httpService)
-        println("Adding to sitemap $mapUrl")
+            val request = helpers.buildHttpRequest(java.net.URL(mapUrl))
+            val requestResponse = SourceMapSiteMapItem(request, issue.httpService)
+            println("Adding to sitemap $mapUrl")
 
-        callbacks.addToSiteMap(requestResponse)
+            callbacks.addToSiteMap(requestResponse)
+        }
     }
+
 }

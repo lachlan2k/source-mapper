@@ -9,20 +9,20 @@ import burp.lib.SourceMapExtractor
 import burp.lib.issues.SourceMapFoundIssue
 
 class AnalyseMapFileCheck(private val controller: SourceMapperController) : IScannerCheck {
-    override fun consolidateDuplicateIssues(existingIssue: IScanIssue?, newIssue: IScanIssue?) = when (existingIssue?.issueDetail) {
+    override fun consolidateDuplicateIssues(existingIssue: IScanIssue?, newIssue: IScanIssue?): Int = when (existingIssue?.issueDetail) {
         null -> 0
         newIssue?.issueDetail -> -1
         else -> 0
     }
 
     override fun doPassiveScan(baseRequestResponse: IHttpRequestResponse?): MutableList<IScanIssue> {
-        if (baseRequestResponse == null) return ArrayList()
+        if (baseRequestResponse == null) return mutableListOf()
 
         val requestInfo = controller.helpers.analyzeRequest(baseRequestResponse)
         val isMapExt = requestInfo.url.file.endsWith(".js.map", true)
 
         if (!isMapExt) {
-            return ArrayList()
+            return mutableListOf()
         }
 
         val responseInfo = controller.helpers.analyzeResponse(baseRequestResponse.response)
@@ -38,9 +38,9 @@ class AnalyseMapFileCheck(private val controller: SourceMapperController) : ISca
 
             controller.store.insert(requestInfo.url, files)
 
-            arrayListOf(SourceMapFoundIssue(requestInfo.url, emptyArray(), baseRequestResponse.httpService, filenames))
+            mutableListOf(SourceMapFoundIssue(requestInfo.url, emptyArray(), baseRequestResponse.httpService, filenames))
         } catch (e: SourceMapExtractor.InvalidSourceMapException) {
-            ArrayList()
+            mutableListOf()
         }
     }
 

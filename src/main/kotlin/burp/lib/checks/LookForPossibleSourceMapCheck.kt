@@ -8,17 +8,16 @@ import burp.SourceMapperController
 import burp.lib.issues.PossibleSourceMapIssue
 
 class LookForPossibleSourceMapCheck(private val controller: SourceMapperController) : IScannerCheck {
-    private val sourceMapCommentPattern = """//#\s?sourceMappingURL=(.+?)(?=\\n|\n|$|//)""".toRegex()
-    private val foundComments = HashMap<String, MutableSet<String>>()
+    private val sourceMapCommentPattern = """//#\s?sourceMappingURL=(.+?)(?=\\n|\n|$|//|")""".toRegex()
 
-    override fun consolidateDuplicateIssues(existingIssue: IScanIssue?, newIssue: IScanIssue?) = when (existingIssue?.issueDetail) {
+    override fun consolidateDuplicateIssues(existingIssue: IScanIssue?, newIssue: IScanIssue?): Int = when (existingIssue?.issueDetail) {
         null -> 0
         newIssue?.issueDetail -> -1
         else -> 0
     }
 
-    override fun doPassiveScan(baseRequestResponse: IHttpRequestResponse?): MutableList<IScanIssue> {
-        if (baseRequestResponse == null) return ArrayList()
+    override fun doPassiveScan(baseRequestResponse: IHttpRequestResponse?): MutableList<PossibleSourceMapIssue> {
+        if (baseRequestResponse == null) return mutableListOf()
 
         val requestInfo = controller.helpers.analyzeRequest(baseRequestResponse)
         val responseInfo = controller.helpers.analyzeResponse(baseRequestResponse.response)
@@ -37,19 +36,11 @@ class LookForPossibleSourceMapCheck(private val controller: SourceMapperControll
             ))
 
             PossibleSourceMapIssue(requestInfo.url, arrayOf(marked), baseRequestResponse.httpService, comment, sourceMapFileName)
-        }.filter {
-            when (val set = foundComments[it.url.toString()]) {
-                null -> true
-                else -> !set.contains(it.extractedComment)
-            }
         }.toMutableList()
 
         issues.forEach { controller.onFoundSourceMapComment(it, requestInfo) }
-        issues.forEach {
-            foundComments.getOrPut(it.url.toString()) { mutableSetOf() }.add(it.extractedComment)
-        }
 
-        return issues as MutableList<IScanIssue>
+        return issues
     }
 
     override fun doActiveScan(baseRequestResponse: IHttpRequestResponse?, insertionPoint: IScannerInsertionPoint?): MutableList<IScanIssue> = ArrayList()

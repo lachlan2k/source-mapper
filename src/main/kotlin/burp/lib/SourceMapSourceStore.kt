@@ -25,7 +25,7 @@ class SourceMapSourceStore : TreeModel {
     }
 
     private val data = TreeFolder("Sources")
-    private val filterWebpackProtocolPattern = """^(webpack://)?/?\.?/?""".toRegex()
+    private val filterWebpackProtocolPattern = """^(webpack://)?/?""".toRegex()
 
     private val listeners = HashSet<TreeModelListener>()
 
@@ -61,41 +61,44 @@ class SourceMapSourceStore : TreeModel {
         val base = constructUrlBase(sourceMapUrl)
         val sourceMapFolderPathLevels = sourceMapUrl.path.substringBeforeLast("/").trimStart('/').split("/").dropLast(1)
 
-        files.forEach { file ->
-            val sourceFileFolderPathLevels = filterWebpackProtocolPattern.replace(file.sourcePath, "").split("/")
-            val completePathLevels = listOf(base) + sourceMapFolderPathLevels + sourceFileFolderPathLevels
-            val sourceFileName = completePathLevels.last()
+        synchronized(this) {
+            files.forEach { file ->
+                val sourceFileFolderPathLevels = filterWebpackProtocolPattern.replace(file.sourcePath, "").split("/")
+                val completePathLevels = listOf(base) + sourceMapFolderPathLevels + sourceFileFolderPathLevels
+                val sourceFileName = completePathLevels.last()
 
-            var cursor = data
+                var cursor = data
 
-            completePathLevels.dropLast(1).forEach {
-                if (!cursor.folders.containsKey(it)) {
-                    cursor.folders[it] = TreeFolder(it)
+                completePathLevels.dropLast(1).forEach {
+                    cursor = cursor.folders.getOrPut(it) { TreeFolder(it) }
                 }
-                cursor = cursor.folders[it]!!
+
+                cursor.files[sourceFileName] = TreeFile(sourceFileName, file.sourceContents)
             }
 
-            cursor.files[sourceFileName] = TreeFile(sourceFileName, file.sourceContents)
+            notifyListeners()
         }
-
-        notifyListeners()
     }
 
     fun getFolder(pathLevels: List<String>): TreeFolder? {
-        var cursor: TreeFolder? = data
+        synchronized(this) {
+            var cursor: TreeFolder? = data
 
-        pathLevels.forEach {
-            cursor = cursor?.folders?.get(it)
+            pathLevels.forEach {
+                cursor = cursor?.folders?.get(it)
+            }
+
+            return cursor
         }
-
-        return cursor
     }
 
     fun getFile(pathLevels: List<String>): TreeFile? {
-        val folder = getFolder(pathLevels.dropLast(1))
-        val fileName = pathLevels.last()
+        synchronized(this) {
+            val folder = getFolder(pathLevels.dropLast(1))
+            val fileName = pathLevels.last()
 
-        return folder?.files?.get(fileName)
+            return folder?.files?.get(fileName)
+        }
     }
 
     override fun getRoot(): Any {
@@ -104,24 +107,30 @@ class SourceMapSourceStore : TreeModel {
 
     override fun isLeaf(node: Any?) = node is TreeFile
 
-    override fun getChildCount(parent: Any?) = when (parent) {
-        is TreeFile -> 0
-        is TreeFolder -> parent.folders.size + parent.files.size
-        else -> 0
-    }
-
-    override fun getIndexOfChild(parent: Any?, child: Any?): Int = when (parent) {
-        is TreeFolder -> when (child) {
-            is TreeFolder -> parent.folders.values.indexOf(child)
-            is TreeFile -> parent.files.values.indexOf(child) + parent.folders.size
+    override fun getChildCount(parent: Any?) = synchronized(this) {
+        when (parent) {
+            is TreeFile -> 0
+            is TreeFolder -> parent.folders.size + parent.files.size
             else -> 0
         }
-        else -> 0
     }
 
-    override fun getChild(parent: Any?, index: Int) = when (parent) {
-        is TreeFolder -> parent.get(index)
-        else -> null
+    override fun getIndexOfChild(parent: Any?, child: Any?): Int = synchronized(this) {
+        when (parent) {
+            is TreeFolder -> when (child) {
+                is TreeFolder -> parent.folders.values.indexOf(child)
+                is TreeFile -> parent.files.values.indexOf(child) + parent.folders.size
+                else -> 0
+            }
+            else -> 0
+        }
+    }
+
+    override fun getChild(parent: Any?, index: Int) = synchronized(this) {
+        when (parent) {
+            is TreeFolder -> parent.get(index)
+            else -> null
+        }
     }
 
     override fun valueForPathChanged(path: TreePath?, newValue: Any?) {}
