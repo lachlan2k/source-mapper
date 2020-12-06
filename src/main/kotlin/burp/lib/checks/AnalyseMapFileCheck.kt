@@ -19,7 +19,7 @@ class AnalyseMapFileCheck(private val controller: SourceMapperController) : ISca
         if (baseRequestResponse == null) return mutableListOf()
 
         val requestInfo = controller.helpers.analyzeRequest(baseRequestResponse)
-        val isMapExt = requestInfo.url.file.endsWith(".js.map", true)
+        val isMapExt = requestInfo.url.file.endsWith(".map", true)
 
         if (!isMapExt) {
             return mutableListOf()
