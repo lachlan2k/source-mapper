@@ -2,6 +2,7 @@ package burp.lib.ui
 
 import burp.ITab
 import burp.SourceMapperController
+import burp.lib.FolderExporter
 import burp.lib.SourceMapSourceStore
 import java.io.File
 import javax.swing.JFileChooser
@@ -15,37 +16,40 @@ class SourceMapperUITab(private val controller: SourceMapperController) : ITab, 
     private val topControls = TopControls(controller)
     private var nodeToExport: Any? = null
 
-    private fun exportFolder (folder: SourceMapSourceStore.TreeFolder) {
+    private fun exportFolder(folder: SourceMapSourceStore.TreeFolder) {
         val chooser = JFileChooser()
         chooser.dialogTitle = "Choose a directory to export ${folder.name} to:"
         chooser.fileSelectionMode = JFileChooser.DIRECTORIES_ONLY
 
         if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             println("Saving to ${chooser.selectedFile.absolutePath}")
+            FolderExporter(folder, chooser.selectedFile.absoluteFile.toPath()).export()
         }
     }
 
-    private fun exportFile (file: SourceMapSourceStore.TreeFile) {
+    private fun exportFile(file: SourceMapSourceStore.TreeFile) {
         val chooser = JFileChooser()
         chooser.dialogTitle = "Choose a directory to export ${file.name} to:"
         chooser.selectedFile = File(file.name)
 
         if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
             println("Saving to ${chooser.selectedFile.absolutePath}")
-        }
-    }
-
-    fun onExport() = nodeToExport.let { node ->
-        when (node) {
-            is SourceMapSourceStore.TreeFile -> exportFile(node)
-            is SourceMapSourceStore.TreeFolder -> exportFolder(node)
-            else -> Unit
+            chooser.selectedFile.writeText(file.contents)
         }
     }
 
     init {
         topComponent = topControls
         bottomComponent = fileBrowser
+
+        topControls.addExportListener {
+            nodeToExport?.let {
+                when (it) {
+                    is SourceMapSourceStore.TreeFile -> exportFile(it)
+                    is SourceMapSourceStore.TreeFolder -> exportFolder(it)
+                }
+            }
+        }
 
         fileBrowser.tree.addTreeSelectionListener {
             val selectedNode = fileBrowser.tree.lastSelectedPathComponent

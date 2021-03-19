@@ -11,14 +11,24 @@ class TopControls(private val controller: SourceMapperController) : JPanel() {
     private val exportTextLabel = JLabel("")
     private val exportButton = JButton("Export")
 
-    interface ExportListener {
+    interface ExportListener : EventListener {
         fun onExport();
+    }
+
+    class CallbackExportListener(val callback: () -> Unit) : ExportListener {
+        override fun onExport() {
+            callback()
+        }
     }
 
     private val listeners = mutableListOf<ExportListener>()
 
     fun addExportListener(listener: ExportListener) {
         listeners.add(listener)
+    }
+
+    fun addExportListener(listener: () -> Unit) {
+        listeners.add(CallbackExportListener(listener))
     }
 
     private fun notifyExportListeners() {
@@ -32,7 +42,7 @@ class TopControls(private val controller: SourceMapperController) : JPanel() {
         set(text) = if (text == null) {
             exportTextLabel.text = "<html><b>Nothing to export</b></html>"
         } else {
-            exportTextLabel.text = "<html><b>Item to export:</b> $text</html>"
+            exportTextLabel.text = "<html><b>Item to export:</b> $text</html>" // todo: sanitize. no xss is possible, but meh
         }
 
     init {
@@ -41,9 +51,6 @@ class TopControls(private val controller: SourceMapperController) : JPanel() {
         add(exportButton)
 
         exportButton.addActionListener {
-            JOptionPane.showOptionDialog(
-                this, "Export doesn't work yet, sorry. :(", "I'm really sorry", JOptionPane.OK_OPTION,
-                JOptionPane.PLAIN_MESSAGE, null, arrayOf("It's okay, Lachlan"), "It's okay, Lachlan")
             notifyExportListeners()
         }
     }

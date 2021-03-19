@@ -12,8 +12,8 @@ class SourceMapSourceStore : TreeModel {
     }
 
     class TreeFolder(val name: String) {
-        val folders = TreeMap<String, TreeFolder>()
-        val files = TreeMap<String, TreeFile>()
+        public val folders = TreeMap<String, TreeFolder>()
+        public val files = TreeMap<String, TreeFile>()
 
         fun getSize() = folders.size + files.size
         fun get(index: Int): Any = when {
