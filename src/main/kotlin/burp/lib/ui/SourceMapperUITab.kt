@@ -29,7 +29,7 @@ class SourceMapperUITab(private val controller: SourceMapperController) : ITab, 
 
     private fun exportFile(file: SourceMapSourceStore.TreeFile) {
         val chooser = JFileChooser()
-        chooser.dialogTitle = "Choose a directory to export ${file.name} to:"
+        chooser.dialogTitle = "Choose a location to export ${file.name} to:"
         chooser.selectedFile = File(file.name)
 
         if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
